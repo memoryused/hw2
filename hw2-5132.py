@@ -124,7 +124,9 @@ copy_among_buckets(from_bucket='nyc-tlc', from_key='trip data/green_tripdata_201
                       to_bucket='nyc-tlc-cs653-5132', to_key='few-trips/green_tripdata_2017-01.parquet')
 
 # Set up S3 Select parameters
-query ="select * from s3object s limit 10"
+query1 ="select payment_type, count(payment_type) from s3object s group by s.payment_type"
+query2 ="select PULocationID, count(PULocationID) as rides, sum(total_amount) as 'Total amount', avg(passenger_count) as 'AVG passenger count' from s3object s group by s.PULocationID"
+query3 =""
 bucket = 'nyc-tlc-cs653-5132'
 key = 'few-trips/trips-2017-01.parquet'
 expression_type = 'SQL'
@@ -132,7 +134,7 @@ input_serialization = {'Parquet': {}}
 output_serialization = {'CSV': {}}
 
 # Execute S3 Select query
-def s3_select(bucket, key, statement):
+def s3_select(bucket, key, query):
     response = s3.select_object_content(
         Bucket=bucket,
         Key=key,
@@ -148,4 +150,6 @@ def s3_select(bucket, key, statement):
             records = event['Records']['Payload'].decode('utf-8')
             print(records)
 
-s3_select(bucket, key, query)
+s3_select(bucket, key, query1)
+s3_select(bucket, key, query2)
+s3_select(bucket, key, query3)
